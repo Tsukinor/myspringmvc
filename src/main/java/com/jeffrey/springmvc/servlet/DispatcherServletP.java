@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,8 @@ public class DispatcherServletP extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("DispatcherServletP-----doPost---被调用");
+        //调用方法完成分发请求
+        executeDispatch(req,resp);
     }
 
     //完成url和处理器方法的映射
@@ -69,9 +72,11 @@ public class DispatcherServletP extends HttpServlet {
                 Method[] methods = aClass.getMethods();
                 for (Method method :methods) {
                     if (method.isAnnotationPresent(RequestMapping.class)){
+                        String contextPath = getServletContext().getContextPath();
                         String url = method.getAnnotation(RequestMapping.class).value();
+                        String fullUrl = contextPath + url;
                         //创建HandlerP对象
-                        HandlerP handlerP = new HandlerP(url, entry.getValue(), method);
+                        HandlerP handlerP = new HandlerP(fullUrl, entry.getValue(), method);
                         handlerPList.add(handlerP);
                     }
                 }
@@ -80,5 +85,40 @@ public class DispatcherServletP extends HttpServlet {
 
         }
 
+    }
+
+    //通过request对象，返回handlerp对象
+    private HandlerP getHandler(HttpServletRequest request){
+        //1.获取到请求uri
+        String requestURI = request.getRequestURI();
+        //遍历handlerPList
+        //注意：得到的uri和HandlerP中的url 工程路径问题
+        for (HandlerP uri :handlerPList) {
+            if (uri.getUrl().equals(requestURI)){
+                return uri;
+            }
+        }
+        return null;
+    }
+
+    //完成分发请求任务
+    private void executeDispatch(HttpServletRequest request,
+                                 HttpServletResponse response){
+
+        HandlerP handler = getHandler(request);
+        try {
+
+            if (handler == null){
+            //说明用户请求资源不存在
+                PrintWriter writer = response.getWriter();
+                writer.println("404NotFound");
+            }else {
+                //匹配成功后，反射调用控制器方法
+                handler.getMethod().invoke(handler.getController(),request,response);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
