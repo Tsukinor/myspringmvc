@@ -1,5 +1,7 @@
 package com.jeffrey.springmvc.servlet;
 
+import com.jeffrey.springmvc.context.WebApplicationContext;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,10 +22,15 @@ import java.io.IOException;
 public class DispatcherServletP extends HttpServlet {
 
     @Override
+    public void init() throws ServletException {
+        WebApplicationContext webApplicationContext = new WebApplicationContext();
+        webApplicationContext.init();
+    }
+
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doPost(req,resp);
         System.out.println("DispatcherServletP------doGet---被调用");
-
     }
 
     @Override

@@ -18,12 +18,17 @@ import java.io.InputStream;
  **/
 public class XmlParser {
 
-    public static String getBasePackage(String xmlFile) throws Exception {
+    public static String getBasePackage(String xmlFile)  {
         SAXReader saxReader = new SAXReader();
         ClassLoader classLoader = XmlParser.class.getClassLoader();
         InputStream resourceAsStream = classLoader.getResourceAsStream(xmlFile);
 
-        Document read = saxReader.read(resourceAsStream);
+        Document read = null;
+        try {
+            read = saxReader.read(resourceAsStream);
+        } catch (DocumentException e) {
+            throw new RuntimeException(e);
+        }
         Element rootElement = read.getRootElement();
         Element element = rootElement.element("component-scan");
 
