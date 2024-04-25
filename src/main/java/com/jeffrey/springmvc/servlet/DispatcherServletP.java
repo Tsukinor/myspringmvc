@@ -5,6 +5,7 @@ import com.jeffrey.springmvc.annotation.RequestMapping;
 import com.jeffrey.springmvc.context.WebApplicationContext;
 import com.jeffrey.springmvc.handler.HandlerP;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -36,8 +37,12 @@ public class DispatcherServletP extends HttpServlet {
     WebApplicationContext webApplicationContext = null;
 
     @Override
-    public void init() throws ServletException {
-              webApplicationContext  = new WebApplicationContext();
+    public void init(ServletConfig servletConfig) throws ServletException {
+
+        String configLocation =
+                servletConfig.getInitParameter("contextConfigLocation");
+
+        webApplicationContext  = new WebApplicationContext(configLocation);
         webApplicationContext.init();
         //调用 initHandlerMapping ，完成url 和控制器方法的映射
         initHandlerMapping();
@@ -72,11 +77,11 @@ public class DispatcherServletP extends HttpServlet {
                 Method[] methods = aClass.getMethods();
                 for (Method method :methods) {
                     if (method.isAnnotationPresent(RequestMapping.class)){
-                        String contextPath = getServletContext().getContextPath();
+//                        String contextPath = getServletContext().getContextPath();
                         String url = method.getAnnotation(RequestMapping.class).value();
-                        String fullUrl = contextPath + url;
+//                        String fullUrl = contextPath + url;
                         //创建HandlerP对象
-                        HandlerP handlerP = new HandlerP(fullUrl, entry.getValue(), method);
+                        HandlerP handlerP = new HandlerP(url, entry.getValue(), method);
                         handlerPList.add(handlerP);
                     }
                 }

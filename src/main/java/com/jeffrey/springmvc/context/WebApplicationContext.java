@@ -26,12 +26,24 @@ public class WebApplicationContext {
     private ConcurrentHashMap<String,Object> singletons =
             new ConcurrentHashMap<>();
 
+    //表示spring容器配置文件
+    //得到的是：classpath:springmvc.xml 需要进行处理
+    private String configLocation;
+    //无参构造器
+    public WebApplicationContext() {
+    }
+
+    public WebApplicationContext(String configLocation) {
+        this.configLocation = configLocation;
+    }
+
+
     public ConcurrentHashMap<String, Object> getSingletons() {
         return singletons;
     }
 
     public void init(){
-        String basePackage = XmlParser.getBasePackage("springmvc.xml");
+        String basePackage = XmlParser.getBasePackage(configLocation.split(":")[1]);
         System.out.println("basePackage=" + basePackage);
         String[] packageNames = basePackage.split(",");
         if (packageNames.length > 0){
