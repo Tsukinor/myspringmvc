@@ -2,6 +2,7 @@ package com.jeffrey.springmvc.context;
 
 import com.jeffrey.springmvc.XmlParser;
 import com.jeffrey.springmvc.annotation.Controller;
+import com.jeffrey.springmvc.annotation.Service;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -51,10 +52,10 @@ public class WebApplicationContext {
                 scanPackage(packageName);
             }
         }
-        System.out.println(classFullPathList);
+        System.out.println("classFullPathList=" + classFullPathList);
         //将扫描到的类反射创建实例放入容器
         executeInstance();
-        System.out.println(singletons);
+        System.out.println("singletons=" + singletons);
     }
 
     //创建方法，完成对包的扫描
@@ -90,6 +91,33 @@ public class WebApplicationContext {
                         String simpleName = aClass.getSimpleName().substring(0,1).toLowerCase()
                                 + aClass.getSimpleName().substring(1);
                         singletons.put(simpleName,instance);
+                    }
+                    else if (aClass.isAnnotationPresent(Service.class)) {//如果类有@Serivce注解
+
+                        //先获取到Service的value值=> 就是注入时的beanName
+                        Service serviceAnnotation =
+                                aClass.getAnnotation(Service.class);
+
+                        String beanName = serviceAnnotation.value();
+                        if ("".equals(beanName)) {//说明没有指定value, 我们就使用默认的机制注入Service
+                            //可以通过接口名/类名[首字母小写]来注入ioc容器
+                            //1.得到所有接口的名称=>反射
+                            Class<?>[] interfaces = aClass.getInterfaces();
+
+                            Object instance = aClass.newInstance();
+                            //2. 遍历接口，然后通过多个接口名来注入
+                            for (Class<?> anInterface : interfaces) {
+                                //接口名->首字母小写
+                                String beanName2 = anInterface.getSimpleName().substring(0, 1).toLowerCase() +
+                                        anInterface.getSimpleName().substring(1);
+                                singletons.put(beanName2, instance);
+                            }
+                            //3. 留一个作业,使用类名的首字母小写来注入bean
+                            //   通过 aClass 来即可.
+
+                        } else {//如果有指定名称,就使用该名称注入即可
+                            singletons.put(beanName, aClass.newInstance());
+                        }
                     }
 
                 } catch (Exception e) {

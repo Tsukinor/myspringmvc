@@ -1,5 +1,9 @@
 package com.jeffrey.service;
 
+import com.jeffrey.entity.Monster;
+
+import java.util.List;
+
 /**
  * @program: myspringmvc
  * @author: Jeffrey
@@ -7,4 +11,5 @@ package com.jeffrey.service;
  * @description:
  **/
 public interface MonsterService {
+    List<Monster> listMonster();
 }
