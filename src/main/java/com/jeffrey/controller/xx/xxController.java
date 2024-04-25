@@ -1,5 +1,7 @@
 package com.jeffrey.controller.xx;
 
+import com.jeffrey.springmvc.annotation.Controller;
+
 /**
  * @program: myspringmvc
  * @author: Jeffrey

@@ -1,11 +1,14 @@
 package com.jeffrey.springmvc.context;
 
 import com.jeffrey.springmvc.XmlParser;
+import com.jeffrey.springmvc.annotation.Controller;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @program: myspringmvc
@@ -19,6 +22,14 @@ public class WebApplicationContext {
     private List<String> classFullPathList =
             new ArrayList<>();
 
+    //定义一个单例池，在初始化时，将实例注入
+    private ConcurrentHashMap<String,Object> singletons =
+            new ConcurrentHashMap<>();
+
+    public ConcurrentHashMap<String, Object> getSingletons() {
+        return singletons;
+    }
+
     public void init(){
         String basePackage = XmlParser.getBasePackage("springmvc.xml");
         System.out.println("basePackage=" + basePackage);
@@ -29,7 +40,9 @@ public class WebApplicationContext {
             }
         }
         System.out.println(classFullPathList);
-
+        //将扫描到的类反射创建实例放入容器
+        executeInstance();
+        System.out.println(singletons);
     }
 
     //创建方法，完成对包的扫描
@@ -52,7 +65,26 @@ public class WebApplicationContext {
 //            String path = file1.getPath();
 //            System.out.println(path);
         }
+    }
 
+    //将扫描到的类，在满足情况的条件下，注入到 singletons 中
+    public void executeInstance(){
+        if (classFullPathList.size() > 0){
+            for (String classPath :classFullPathList) {
+                try {
+                    Class<?> aClass = Class.forName(classPath);
+                    if (aClass.isAnnotationPresent(Controller.class)){
+                        Object instance = aClass.newInstance();
+                        String simpleName = aClass.getSimpleName().substring(0,1).toLowerCase()
+                                + aClass.getSimpleName().substring(1);
+                        singletons.put(simpleName,instance);
+                    }
 
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        }
     }
 }
