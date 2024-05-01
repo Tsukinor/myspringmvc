@@ -11,8 +11,12 @@ import java.util.List;
  * @description:
  **/
 public interface MonsterService {
+    //返回monsterList列表
     List<Monster> listMonster();
 
     //通过传入的name，返回monster列表
     List<Monster> findMonsterByName(String name);
+
+    //处理登录
+     boolean login(String name);
 }

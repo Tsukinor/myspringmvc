@@ -47,4 +47,13 @@ public class MonsterServiceImpl implements MonsterService {
         }
         return findMonsters;
     }
+
+    @Override
+    public boolean login(String name){
+        if ("monster".equals(name)){
+            return true;
+        }else {
+            return false;
+        }
+    }
 }

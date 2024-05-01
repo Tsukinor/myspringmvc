@@ -144,6 +144,7 @@ public class DispatcherServletP extends HttpServlet {
                 //   String[]:表示http请求的参数值,为什么是数组
                 //      hobby=打篮球&hobby=喝酒
                 //处理提交的数据中文乱码
+                request.setCharacterEncoding("utf-8");//没能处理........老老实实用英文吧
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 //2.进行遍历 parameterMap 将请求参数 填充到 params 实参数组
                 for(Map.Entry<String,String[]> entry : parameterMap.entrySet()){
@@ -175,12 +176,31 @@ public class DispatcherServletP extends HttpServlet {
                     }
 
                 }
-                /**
-                 * 1. 下面这样写法，其实是针对目标方法是 m(HttpServletRequest request , HttpServletResponse response)
-                 * 2. 这里准备将需要传递给目标方法的 实参=>封装到参数数组=》然后以反射调用的方式传递给目标方法
-                 * 3. public Object invoke(Object obj, Object... args)..
-                 */
-                handler.getMethod().invoke(handler.getController(),params);
+
+                  //1. 下面这样写法，其实是针对目标方法是 m(HttpServletRequest request , HttpServletResponse response)
+                  //2. 这里准备将需要传递给目标方法的 实参=>封装到参数数组=》然后以反射调用的方式传递给目标方法
+                  //3. public Object invoke(Object obj, Object... args)..
+                Object result = handler.getMethod().invoke(handler.getController(), params);
+                //这里就是对返回的结果进行解析=》原生 springmvc 是通过视图解析器来完成
+                //这里简化直接解析
+                if (result instanceof String){
+                    String viewName = (String)result;
+                    if (viewName.contains(":")){
+                     //说明你返回的String 结果forward:/login_ok.jsp 或者 redirect:/xxx/xx/xx.xx
+                        String viewType = viewName.split(":")[0];
+                        String viewPage = viewName.split(":")[1];
+                        //判断是forward 还是 redirect
+                        if (viewType.equals("forward")){
+                            //进行请求转发
+                            request.getRequestDispatcher(viewPage).forward(request,response);
+                        }else if (viewType.equals("redirect")){
+                            response.sendRedirect(viewPage);
+                        }
+                    }else {
+                        //没有 ： 默认是请求转发
+                        request.getRequestDispatcher(viewName).forward(request,response);
+                    }
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

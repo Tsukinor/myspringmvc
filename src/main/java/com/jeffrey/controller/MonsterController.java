@@ -81,4 +81,22 @@ public class MonsterController {
             throw new RuntimeException(e);
         }
     }
+
+    //处理登录的方法，返回要请求转发/重定向的字符串
+    @RequestMapping(value = "/monster/login")
+    public String login(HttpServletRequest request,
+                        HttpServletResponse response,
+                        @RequestParam(value = "monsterName") String mName){
+        System.out.println("接收到的mName=" + mName);
+        request.setAttribute("mName",mName);
+        boolean login = monsterService.login(mName);
+        if (login){
+            //登录成功
+            return "/login_ok.jsp";
+        }else {
+            //登录失败
+            return "forward:/login_error.jsp";
+        }
+
+    }
 }
