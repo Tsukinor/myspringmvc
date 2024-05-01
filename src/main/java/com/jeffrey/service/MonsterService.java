@@ -12,4 +12,7 @@ import java.util.List;
  **/
 public interface MonsterService {
     List<Monster> listMonster();
+
+    //通过传入的name，返回monster列表
+    List<Monster> findMonsterByName(String name);
 }
