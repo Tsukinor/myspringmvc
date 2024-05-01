@@ -160,6 +160,18 @@ public class DispatcherServletP extends HttpServlet {
                         params[indexRequestParameterIndex] = value;
                     }else {
                         //说明并没有找到 @RequestParam 注解对应的参数，就会使用默认机制进行匹配
+                        //1.得到目标方法的所有形参的名称---专门编写一个方法获取形参名
+                        //2.对得到目标方法的所有形参进行遍历
+                        //如果匹配就把当前请求的参数值，填充到 params
+                        List<String> parameterNames = getParameterNames(handler.getMethod());
+                        for (int i = 0;i < parameterNames.size();i++){
+                            //如果请求参数名和目标方法的形参名一样，说明匹配成功
+                            if (name.equals(parameterNames.get(i))){
+                                params[i] = value;//填充到数组
+                                break;
+                            }
+                        }
+
                     }
 
                 }
@@ -201,5 +213,27 @@ public class DispatcherServletP extends HttpServlet {
             }
         }
         return -1;
+    }
+
+    //编写方法，得到目标方法所有的形参名称，并放入到集合中返回
+    /** 
+     * @author Jeffrey
+     * @date 15:52 2024/5/1 
+     * @param method 目标方法
+     * @return java.util.List<java.lang.String> 所有形参的名称，并放入到集合中返回
+     **/
+    public List<String> getParameterNames(Method method){
+        List<String> parametersList = new ArrayList<>();
+        //获取到所有参数的名称-----一个小细节！！
+        //在默认情况下 parameter.getName() 得到的名字不是真正的名字
+        //而是 arg0,arg1,arg2....  z在这里引入一个插件，使用Java8特性
+        Parameter[] parameters = method.getParameters();
+        //遍历 parameters 取出名称 放入 parametersList
+        for (Parameter parameter :parameters) {
+            parametersList.add(parameter.getName());
+        }
+        System.out.println("目标方法的形参列表parametersList===" + parametersList);
+
+        return parametersList;
     }
 }

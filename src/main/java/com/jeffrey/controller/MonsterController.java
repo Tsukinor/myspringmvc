@@ -56,12 +56,12 @@ public class MonsterController {
     @RequestMapping(value = "/find/monster")
     public void findMonsterByName(HttpServletRequest request,
                                   HttpServletResponse response,
-                                  @RequestParam(value = "name") String paramName){
+                                  String name){
         //设置编码类型
         response.setContentType("text/html;charset=utf-8");
-        System.out.println("接收到的paramName=" + paramName);
+        System.out.println("接收到的paramName=" + name);
         //调用monsterService
-        List<Monster> monsters = monsterService.findMonsterByName(paramName);
+        List<Monster> monsters = monsterService.findMonsterByName(name);
         StringBuffer content = new StringBuffer("<h1>妖怪列表</h1>");
         content.append("<table border='1px' width='400px' style='border-collapse:collapse'>");
         for (Monster monster : monsters) {
