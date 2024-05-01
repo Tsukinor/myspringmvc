@@ -1,14 +1,17 @@
 package com.jeffrey.springmvc.context;
 
 import com.jeffrey.springmvc.XmlParser;
+import com.jeffrey.springmvc.annotation.AutoWired;
 import com.jeffrey.springmvc.annotation.Controller;
 import com.jeffrey.springmvc.annotation.Service;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -56,6 +59,10 @@ public class WebApplicationContext {
         //将扫描到的类反射创建实例放入容器
         executeInstance();
         System.out.println("singletons=" + singletons);
+
+        //完成注入的bean对象的属性的装配
+        executeAutoWired();
+        System.out.println("装配后ioc容器=" + singletons);
     }
 
     //创建方法，完成对包的扫描
@@ -112,7 +119,7 @@ public class WebApplicationContext {
                                         anInterface.getSimpleName().substring(1);
                                 singletons.put(beanName2, instance);
                             }
-                            //3. 留一个作业,使用类名的首字母小写来注入bean
+                            //3. 使用类名的首字母小写来注入bean
                             //   通过 aClass 来即可.
 
                         } else {//如果有指定名称,就使用该名称注入即可
@@ -126,5 +133,47 @@ public class WebApplicationContext {
             }
 
         }
+    }
+    //完成自动装配
+     public void executeAutoWired(){
+        //判断singletons有没有要装配的对象
+         if (singletons.isEmpty()){
+             throw new RuntimeException(" singletons 没有bean 对象");
+         }
+         //遍历ioc容器中注入的所有bean对象，然后获取到bean的所有字段/属性，判断是否需要装配
+         for (Map.Entry<String,Object> entry : singletons.entrySet()){
+             String key = entry.getKey();
+             Object bean = entry.getValue();
+             //得到bean的所有字段/属性
+             Field[] declaredFields = bean.getClass().getDeclaredFields();
+             for (Field field :declaredFields) {
+                 if (field.isAnnotationPresent(AutoWired.class)){
+                     AutoWired annotation = field.getAnnotation(AutoWired.class);
+                     String beanName = annotation.value();
+                     if (beanName.equals("")){//如果没有设置value，按照默认规则
+                        //即得到字段类型首字母小写，作为名字来进行装配
+                         Class<?> type = field.getType();
+                         beanName =type.getSimpleName().substring(0,1).toLowerCase() +
+                                 type.getSimpleName().substring(1);
+                     }
+                     //如果设置了value，就按照value进行装配
+                     if (singletons.get(beanName) == null){
+                         //singletons没有该bean
+                         throw new RuntimeException("ioc中没有你要装配的bean");
+                     }
+                     //防止属性是private ，需要暴力破解
+                     field.setAccessible(true);
+                     //可以装配属性
+                     try {
+                         field.set(bean,singletons.get(beanName));
+                     } catch (IllegalAccessException e) {
+                         throw new RuntimeException(e);
+                     }
+
+                 }
+             }
+
+         }
+
     }
 }
