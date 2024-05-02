@@ -2,15 +2,13 @@ package com.jeffrey.controller;
 
 import com.jeffrey.entity.Monster;
 import com.jeffrey.service.MonsterService;
-import com.jeffrey.springmvc.annotation.AutoWired;
-import com.jeffrey.springmvc.annotation.Controller;
-import com.jeffrey.springmvc.annotation.RequestMapping;
-import com.jeffrey.springmvc.annotation.RequestParam;
+import com.jeffrey.springmvc.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -97,6 +95,26 @@ public class MonsterController {
             //登录失败
             return "forward:/login_error.jsp";
         }
+
+    }
+    //编写方法，返回json数据格式
+    /** 
+     * @author Jeffrey
+     * @date 17:40 2024/5/1
+     * @param request
+     * @param response 
+     * @return java.util.List<com.jeffrey.entity.Monster>
+     *     目标方法返回的结果是返回给 springmvc 通过反射调用的位置
+     *     在 springmvc 进行反射调用的地方，接收结果并解析
+     *     方法上标注了 @ResponseBody 注解 ，希望以json 格式返回
+     *     如果需要返回其他类型，可通过增加value 进行处理
+     **/
+    @RequestMapping(value = "/monster/list/json")
+    @ResponseBody
+    public List<Monster> listMonsterByJson(HttpServletRequest request,
+                                                HttpServletResponse response){
+        List<Monster> monsters = monsterService.listMonster();
+        return monsters;
 
     }
 }

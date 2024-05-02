@@ -39,6 +39,13 @@
       <version>RELEASE</version>
       <scope>test</scope>
     </dependency>
+
+    <!--  引入 jackson jar，使用其工具类完成 json 转换-->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.12.6.1</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>myspringmvc</finalName>

@@ -1,8 +1,10 @@
 package com.jeffrey.springmvc.servlet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jeffrey.springmvc.annotation.Controller;
 import com.jeffrey.springmvc.annotation.RequestMapping;
 import com.jeffrey.springmvc.annotation.RequestParam;
+import com.jeffrey.springmvc.annotation.ResponseBody;
 import com.jeffrey.springmvc.context.WebApplicationContext;
 import com.jeffrey.springmvc.handler.HandlerP;
 
@@ -199,6 +201,22 @@ public class DispatcherServletP extends HttpServlet {
                     }else {
                         //没有 ： 默认是请求转发
                         request.getRequestDispatcher(viewName).forward(request,response);
+                    }
+                } else if (result instanceof ArrayList){
+                    //判断目标方法是否有 @ResponseBody 注解
+                    Method method = handler.getMethod();
+                    if (method.isAnnotationPresent(ResponseBody.class)){
+                        //把result 【ArrayList】 转成 json 格式返回
+                        //需要使用到Java 如何将 ArrayList 转换为 json
+                        //这里使用 jackson 包下的工具类
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String resultJson = objectMapper.writeValueAsString(result);
+                        //简单处理，直接返回
+                        response.setContentType("text/html;charset=utf-8");
+                        PrintWriter writer = response.getWriter();
+                        writer.write(resultJson);
+                        writer.flush();
+                        writer.close();
                     }
                 }
             }
